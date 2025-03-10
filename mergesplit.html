@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitMerge PDF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #2c3e50;
+      color: #ecf0f1;
+    }
+
+    .container {
+      text-align: center;
+      background: #34495e;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #ecf0f1;
+    }
+
+    .instructions {
+      font-size: 16px;
+      color: #bdc3c7;
+      margin-bottom: 30px;
+    }
+
+    #pdfUpload {
+      margin-bottom: 20px;
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #pdfUpload:hover {
+      background-color: #16a085;
+    }
+
+    .pdf-preview-container {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding: 15px;
+      border: 2px dashed #16a085;
+      min-height: 150px;
+      position: relative;
+      border-radius: 8px;
+    }
+
+    .pdf-preview {
+      width: 120px;
+      height: 160px;
+      border: 2px solid #bdc3c7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #34495e;
+      border-radius: 8px;
+      position: relative;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .pdf-preview canvas {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 4px;
+    }
+
+    .pdf-preview .controls {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      padding: 5px;
+    }
+
+    .pdf-preview .controls button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .pdf-preview .controls button:hover {
+      background-color: #0056b3;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 18px;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    @media (max-width: 600px) {
+      .pdf-preview {
+        width: 100px;
+        height: 140px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      button {
+        font-size: 16px;
+        padding: 10px 20px;
+      }
+    }
+
+    .back-button {
+      text-align: center;
+      color: #bdc3c7;
+      font-size: 14px;
+      margin-top: 40px;
+      padding: 15px;
+      background-color: #1a1a1a;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      text-decoration: none;
+    }
+
+    .back-button:hover {
+      background-color: #141d26;
+    }
+
+    .split-options {
+    display: none;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    background-color: #2980b9;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+    .split-options button {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .split-options button:hover {
+      background-color: #c0392b;
+    }
+
+    .split-indicator {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      background-color: #f39c12;
+      color: white;
+      padding: 5px;
+      font-size: 12px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SplitMerge PDFs</h1>
+    <p class="instructions">Upload your PDFs and adjust their order by clicking the arrows to rearrange before merging. Click or touch one of the pdf that you want to split then write the page you want to keep. If you want to hide the split pdf button, click outside the pdf box</p>
+    <input type="file" id="pdfUpload" multiple accept=".pdf" />
+    <div id="pdfPreviewContainer" class="pdf-preview-container"></div>
+    <button id="mergeButton">Merge PDFs</button>
+  </div>
+
+  <a href="index.html" class="back-button">Back</a>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <script>
+    const pdfUpload = document.getElementById("pdfUpload");
+    const pdfPreviewContainer = document.getElementById("pdfPreviewContainer");
+    const mergeButton = document.getElementById("mergeButton");
+
+    let pdfFiles = [];
+
+    pdfUpload.addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files);
+      pdfFiles = [...pdfFiles, ...files];
+
+      for (const file of files) {
+        const pdfData = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 0.3 });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const previewDiv = document.createElement("div");
+        previewDiv.classList.add("pdf-preview");
+        previewDiv.dataset.fileIndex = pdfFiles.indexOf(file);
+
+        const controls = document.createElement("div");
+        controls.classList.add("controls");
+
+        const moveLeftButton = document.createElement("button");
+        moveLeftButton.textContent = "<";
+        moveLeftButton.addEventListener("click", () => movePdf(previewDiv, "left"));
+        controls.appendChild(moveLeftButton);
+
+        const moveRightButton = document.createElement("button");
+        moveRightButton.textContent = ">";
+        moveRightButton.addEventListener("click", () => movePdf(previewDiv, "right"));
+        controls.appendChild(moveRightButton);
+
+        previewDiv.appendChild(canvas);
+        previewDiv.appendChild(controls);
+
+        const splitOptions = document.createElement("div");
+        splitOptions.classList.add("split-options");
+        splitOptions.innerHTML = `<button onclick="splitPdf(${pdfFiles.indexOf(file)})">Split PDF</button>`;
+        previewDiv.appendChild(splitOptions);
+
+        previewDiv.addEventListener("click", () => {
+          splitOptions.style.display = "block";
+        });
+
+        pdfPreviewContainer.appendChild(previewDiv);
+      }
+    });
+
+    function movePdf(element, direction) {
+      const siblings = Array.from(pdfPreviewContainer.children);
+      const currentIndex = siblings.indexOf(element);
+      const newIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
+
+      if (newIndex >= 0 && newIndex < siblings.length) {
+        const siblingToSwap = siblings[newIndex];
+        if (direction === "left") {
+          pdfPreviewContainer.insertBefore(element, siblingToSwap);
+        } else {
+          pdfPreviewContainer.insertBefore(siblingToSwap, element);
+        }
+
+        pdfFiles = siblings.map((child) => {
+          const fileIndex = child.dataset.fileIndex;
+          return pdfFiles[fileIndex];
+        });
+
+        siblings.forEach((child, index) => {
+          child.dataset.fileIndex = index;
+        });
+      }
+
+      // Hide split options after moving
+    const allSplitOptions = document.querySelectorAll(".split-options");
+    allSplitOptions.forEach((splitOptions) => {
+      splitOptions.style.display = "none";
+    });
+    }
+
+    pdfPreviewContainer.addEventListener('click', (e) => {
+  // Prevent split options from appearing if a "move" button is clicked
+  const previewDiv = e.target.closest('.pdf-preview');
+  if (previewDiv && !e.target.closest('.controls')) {
+    const splitOptions = previewDiv.querySelector('.split-options');
+    if (splitOptions) {
+      splitOptions.style.display = 'block';
+    }
+  }
+});
+
+// Event listener to hide split options when clicking outside the preview container
+document.addEventListener("click", (e) => {
+  const isClickInside = pdfPreviewContainer.contains(e.target);
+  if (!isClickInside) {
+    const allSplitOptions = document.querySelectorAll(".split-options");
+    allSplitOptions.forEach((splitOptions) => {
+      splitOptions.style.display = "none";
+    });
+  }
+});
+
+
+async function splitPdf(fileIndex) {
+  const file = pdfFiles[fileIndex];
+  const pdfData = await file.arrayBuffer();
+  const pdfDoc = await PDFLib.PDFDocument.load(pdfData);
+  const numPages = pdfDoc.getPageCount();
+
+  // Prompt the user to select pages to keep
+  const pagesToKeep = prompt(
+    `Enter the page numbers to keep (1 to ${numPages}):`
+  )
+    .split(",")
+    .map((pageNum) => parseInt(pageNum.trim()) - 1); // Convert to zero-based index
+
+  if (pagesToKeep.length === 0) {
+    alert("No pages selected to keep.");
+    return;
+  }
+
+  const splitPdf = await PDFLib.PDFDocument.create();
+  const pages = await splitPdf.copyPages(pdfDoc, pagesToKeep);
+  pages.forEach((page) => splitPdf.addPage(page));
+
+  const splitPdfBytes = await splitPdf.save();
+  const newFile = new File([splitPdfBytes], `split_${file.name}`, {
+    type: "application/pdf",
+  });
+
+  // Replace original file with the split PDF
+  pdfFiles[fileIndex] = newFile;
+
+  // Hide the split button after clicking
+  const previewDiv = pdfPreviewContainer.children[fileIndex];
+  const splitOptions = previewDiv.querySelector('.split-options');
+  if (splitOptions) {
+    splitOptions.style.display = 'none';
+  }
+
+  // Show split indicator without downloading
+  const splitIndicator = document.createElement("div");
+  splitIndicator.classList.add("split-indicator");
+  splitIndicator.textContent = "Split PDF";
+  previewDiv.appendChild(splitIndicator);
+
+  // Optionally, update preview without triggering download
+  const canvas = previewDiv.querySelector("canvas");
+  const pdf = await pdfjsLib.getDocument({ data: splitPdfBytes }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 0.3 });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const context = canvas.getContext("2d");
+  await page.render({ canvasContext: context, viewport }).promise;
+}
+    mergeButton.addEventListener("click", async () => {
+      const orderedFiles = Array.from(pdfPreviewContainer.children).map(
+        (child) => pdfFiles[child.dataset.fileIndex]
+      );
+
+      const mergedPdf = await PDFLib.PDFDocument.create();
+
+      for (const file of orderedFiles) {
+        const arrayBuffer = await file.arrayBuffer();
+        const existingPdf = await PDFLib.PDFDocument.load(arrayBuffer);
+        const pages = await mergedPdf.copyPages(existingPdf, existingPdf.getPageIndices());
+        pages.forEach((page) => mergedPdf.addPage(page));
+      }
+
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "merged.pdf";
+      a.click();
+    });
+  </script>
+</body>
+</html>
