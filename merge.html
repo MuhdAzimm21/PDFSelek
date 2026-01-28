@@ -107,24 +107,43 @@
 <!-- Help Modal -->
 <div class="modal fade" id="helpModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4">
-      <div class="modal-header">
-        <h5 class="modal-title">How it works</h5>
+    <div class="modal-content rounded-4 shadow">
+
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-semibold">How Merge PDF Works</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <ul class="mb-0">
-            <li>Upload multiple PDF files</li>
-            <li>Reorder using left & right buttons</li>
-            <li>Click merge and download</li>
-        </ul>
+
+      <div class="modal-body pt-0">
+        <ol class="mb-0 ps-3">
+          <li class="mb-2">
+            Upload multiple PDF files you want to combine
+          </li>
+          <li class="mb-2">
+            Reorder the files using the left and right buttons
+          </li>
+          <li class="mb-2">
+            Click <strong>Merge PDF</strong> to combine them into one file
+          </li>
+          <li>
+            Download your merged PDF instantly
+          </li>
+        </ol>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+      <div class="modal-footer border-0">
+        <button
+          class="btn btn-primary px-4 rounded-pill"
+          data-bs-dismiss="modal"
+        >
+          Got it
+        </button>
       </div>
+
     </div>
   </div>
 </div>
+
 <!-- ================= JS (YOUR SCRIPT) ================= -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
