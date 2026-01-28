@@ -126,8 +126,13 @@
 </div>
 
 <!-- ===== FOOTER ===== -->
-<footer class="text-center py-4 text-muted">
-  © 2026 PDF Tools
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <p class="text-center text-muted small mb-0">
+      © 2026 PDFSelek. All rights reserved.
+    </p>
+  </div>
 </footer>
 
 <!-- Help Modal -->
@@ -184,6 +189,8 @@
 
 <!-- Custom JS -->
 <script>
+/* ===================== VARIABLES ===================== */
+const uploadBox = document.querySelector(".upload-box");
 const pdfUpload = document.getElementById("pdfUpload");
 const pdfPreviewContainer = document.getElementById("pdfPreviewContainer");
 const mergeButton = document.getElementById("mergeButton");
@@ -192,12 +199,17 @@ const mergeWrapper = document.getElementById("mergeWrapper");
 let pdfFiles = [];
 let activeSplitFileIndex = null;
 
-/* ===== Upload & Preview ===== */
-pdfUpload.addEventListener("change", async (e) => {
-  const files = Array.from(e.target.files);
-  pdfFiles.push(...files);
+/* ===================== CORE FILE HANDLER ===================== */
+async function handleFiles(files) {
+  const validFiles = Array.from(files).filter(
+    file => file.type === "application/pdf"
+  );
 
-  for (const file of files) {
+  if (!validFiles.length) return;
+
+  pdfFiles.push(...validFiles);
+
+  for (const file of validFiles) {
     const pdfData = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
 
@@ -245,24 +257,49 @@ pdfUpload.addEventListener("change", async (e) => {
   }
 
   mergeWrapper.classList.remove("d-none");
+}
+
+/* ===================== FILE INPUT ===================== */
+pdfUpload.addEventListener("change", (e) => {
+  handleFiles(e.target.files);
+  pdfUpload.value = "";
 });
 
-/* ===== Move PDF ===== */
-function movePdf(element, dir) {
-  const parent = element.parentElement;
+/* ===================== DRAG & DROP ===================== */
+["dragenter", "dragover"].forEach(event => {
+  uploadBox.addEventListener(event, e => {
+    e.preventDefault();
+    uploadBox.classList.add("dragover");
+  });
+});
+
+["dragleave", "drop"].forEach(event => {
+  uploadBox.addEventListener(event, e => {
+    e.preventDefault();
+    uploadBox.classList.remove("dragover");
+  });
+});
+
+uploadBox.addEventListener("drop", (e) => {
+  handleFiles(e.dataTransfer.files);
+});
+
+/* ===================== MOVE PDF ===================== */
+function movePdf(preview, dir) {
+  const col = preview.parentElement;
   const siblings = [...pdfPreviewContainer.children];
-  const index = siblings.indexOf(parent);
+  const index = siblings.indexOf(col);
   const newIndex = index + dir;
 
   if (newIndex >= 0 && newIndex < siblings.length) {
     pdfPreviewContainer.insertBefore(
-      parent,
+      col,
       siblings[newIndex + (dir > 0 ? 1 : 0)]
     );
   }
 }
 
-/* ===== Split Flow ===== */
+/* ===================== SPLIT FLOW ===================== */
 function openSplitConfirm(preview) {
   activeSplitFileIndex = parseInt(preview.dataset.fileIndex);
   new bootstrap.Modal(
@@ -294,15 +331,14 @@ async function loadSplitPages(index) {
     const col = document.createElement("div");
     col.className = "col-4 col-md-2";
 
-    col.innerHTML = `
-      <div class="page-card" data-page="${i}">
-        Page ${i + 1}
-      </div>
-    `;
+    const card = document.createElement("div");
+    card.className = "page-card";
+    card.dataset.page = i;
+    card.textContent = `Page ${i + 1}`;
 
-    col.onclick = () =>
-      col.firstElementChild.classList.toggle("selected");
+    card.onclick = () => card.classList.toggle("selected");
 
+    col.appendChild(card);
     grid.appendChild(col);
   }
 }
@@ -323,7 +359,7 @@ document.getElementById("applySplitBtn").onclick = async () => {
   ).hide();
 };
 
-/* ===== Split PDF ===== */
+/* ===================== SPLIT PDF ===================== */
 async function splitPdf(index, pagesToKeep) {
   const file = pdfFiles[index];
   const pdfData = await file.arrayBuffer();
@@ -339,7 +375,7 @@ async function splitPdf(index, pagesToKeep) {
   });
 }
 
-/* ===== Merge PDFs ===== */
+/* ===================== MERGE PDFs ===================== */
 mergeButton.onclick = async () => {
   const merged = await PDFLib.PDFDocument.create();
 
@@ -356,11 +392,11 @@ mergeButton.onclick = async () => {
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "merged.pdf";
+  a.download = "SplitMerged.pdf";
   a.click();
 };
-
 </script>
+
 
 </body>
 </html>
