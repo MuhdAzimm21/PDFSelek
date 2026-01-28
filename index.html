@@ -2,125 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="icon.png" rel="icon">
-  <title>PDF Selek</title>
-  <style>
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%; /* Ensure the body and html take the full viewport height */
-  overflow: hidden; /* Prevent scrolling */
-  box-sizing: border-box; /* Include padding/border in width/height */
-}
+  <title>PDF Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%; /* Ensure body takes up the full height */
-  background: linear-gradient(135deg, #1a1a1a, #2c3e50); /* Dark gradient background */
-  color: #ecf0f1; /* Light text color */
-  flex-direction: column;
-}
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-.container {
-  text-align: center;
-  background: rgba(26, 32, 38, 0.85); /* Semi-transparent dark background */
-  padding: 40px 30px;
-  border-radius: 15px;
-  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4); /* Darker shadow */
-  width: 90%;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.header {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #ecf0f1;
-  text-transform: uppercase;
-}
-
-.intro-text {
-  font-size: 18px;
-  color: #bdc3c7;
-  margin-bottom: 40px;
-}
-
-.link-button {
-  display: inline-block;
-  background-color: #34495e; /* Darker blue-grey for buttons */
-  color: white;
-  padding: 15px 30px;
-  border-radius: 6px;
-  font-size: 20px;
-  text-decoration: none;
-  margin: 15px;
-  transition: all 0.3s ease;
-  transform: scale(1);
-}
-
-.link-button:hover {
-  background-color: #1abc9c; /* Teal color on hover */
-  transform: scale(1.05); /* Slight scale on hover */
-}
-
-.link-button:active {
-  transform: scale(1.02); /* Slight shrink on click */
-}
-
-.footer {
-  text-align: center;
-  color: #bdc3c7;
-  font-size: 12px;
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #1a1a1a;
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-}
-
-@media (max-width: 768px) {
-  .container {
-    width: 80%; /* Adjust container width on smaller screens */
-  }
-
-  .header {
-    font-size: 28px;
-  }
-
-  .link-button {
-    font-size: 15px;
-    padding: 12px 25px;
-  }
-}
-
-  </style>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- ================= HEADER / NAVBAR ================= -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
   <div class="container">
-    <div class="header">
-      PDF Selek
-    </div>
-    <p class="intro-text">Welcome to the PDF Selek! Choose an option below to merge or split your PDFs effortlessly. The easiest way to handle your PDFs.</p>
+    <a class="navbar-brand fw-bold text-primary" href="#">PDFTools</a>
 
-    <div>
-      <a href="merge.html" class="link-button">Merge PDF</a>
-      <a href="split.html" class="link-button">Split PDF</a>
-      <a href="mergesplit.html" class="link-button">SplitMerge PDF</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="merge.html">Merge</a></li>
+        <li class="nav-item"><a class="nav-link" href="split.html">Split</a></li>
+        <li class="nav-item"><a class="nav-link" href="split-and-merge.html">Split & Merge</a></li>
+      </ul>
     </div>
   </div>
+</nav>
 
-  <div class="footer">
-    <p>&copy; 2025 Muhammad Azim. All rights reserved.</p>
+<!-- Spacer for fixed navbar -->
+<div style="height: 80px;"></div>
+
+<!-- ================= HERO SECTION ================= -->
+<section class="hero-section text-center">
+  <div class="container">
+    <h1 class="fw-bold display-5 mb-4">
+      Simple PDF Selek — Merge, Split, and Organize PDFs Easily
+    </h1>
+    <p class="lead text-muted mb-4">
+      Fast, secure, and free online PDF tools. No registration required.
+    </p>
   </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+
+      <div class="col-md-4">
+        <a href="merge.html" class="card feature-card h-100">
+          <div class="card-body">
+            <div class="icon bg-primary-subtle text-primary">➕</div>
+            <h5 class="card-title mt-3">Merge PDF</h5>
+            <p class="card-text text-muted">
+              Combine multiple PDF files into one document easily.
+            </p>
+            <span class="text-primary fw-semibold">Start merging →</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="split.html" class="card feature-card h-100">
+          <div class="card-body">
+            <div class="icon bg-purple text-purple">✂️</div>
+            <h5 class="card-title mt-3">Split PDF</h5>
+            <p class="card-text text-muted">
+              Extract or split pages by range or selection.
+            </p>
+            <span class="fw-semibold text-purple">Start splitting →</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-md-4">
+        <a href="split-and-merge.html" class="card feature-card h-100">
+          <div class="card-body">
+            <div class="icon bg-success-subtle text-success">🔀</div>
+            <h5 class="card-title mt-3">Split & Merge</h5>
+            <p class="card-text text-muted">
+              Rearrange and combine pages from multiple PDFs.
+            </p>
+            <span class="fw-semibold text-success">Start organizing →</span>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="container">
+    <hr>
+    <p class="text-center text-muted small mb-0">
+      © 2026 PDFTools. All rights reserved.
+    </p>
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Split & Merge PDF</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="index.html">PDFSelek</a>
+
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="merge.html">Merge</a></li>
+        <li class="nav-item"><a class="nav-link" href="split.html">Split</a></li>
+        <li class="nav-item"><a class="nav-link" href="split-and-merge.html">Split & Merge</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div style="height:80px"></div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="container py-5">
+
+  <!-- Title -->
+  <div class="text-center mb-5">
+    <h1 class="fw-bold">Split & Merge PDFs</h1>
+    <p class="text-muted">
+      Upload PDFs, split pages, and merge them into one document
+    </p>
+  </div>
+
+  <!-- Upload Box -->
+  <div class="upload-box text-center mb-5">
+    <input type="file" id="pdfUpload" accept=".pdf" multiple hidden>
+
+    <div class="upload-inner">
+      <div class="upload-icon mb-3">📄</div>
+      <h5 class="fw-semibold">Drop PDF files here</h5>
+      <p class="text-muted">or click the button below</p>
+
+      <label for="pdfUpload" class="btn btn-success btn-lg">
+        Select PDF Files
+      </label>
+    </div>
+  </div>
+
+  <!-- PDF Preview Grid -->
+  <div id="pdfPreviewContainer" class="row g-4"></div>
+
+  <!-- Merge Button -->
+  <div class="text-center mt-5 d-none" id="mergeWrapper">
+    <button id="mergeButton" class="btn btn-success btn-lg px-5 shadow">
+      Merge PDFs
+    </button>
+  </div>
+
+</div>
+
+<!-- ===== SPLIT CONFIRM MODAL ===== -->
+<div class="modal fade" id="splitConfirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title">Split PDF?</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        Do you want to split this PDF and keep selected pages?
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="confirmSplitBtn">
+          Yes, Split
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SPLIT PAGE SELECTION MODAL ===== -->
+<div class="modal fade" id="splitPagesModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Pages to Keep</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="splitPageGrid" class="row g-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="applySplitBtn">
+          Apply Split
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="text-center py-4 text-muted">
+  © 2026 PDF Tools
+</footer>
+
+<!-- PDF LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JS -->
+<script>
+    const pdfUpload = document.getElementById("pdfUpload");
+const pdfPreviewContainer = document.getElementById("pdfPreviewContainer");
+const mergeButton = document.getElementById("mergeButton");
+const mergeWrapper = document.getElementById("mergeWrapper");
+
+let pdfFiles = [];
+let activeSplitFileIndex = null;
+
+/* ===== Upload & Preview ===== */
+pdfUpload.addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files);
+  pdfFiles.push(...files);
+
+  for (const file of files) {
+    const pdfData = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 0.3 });
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const col = document.createElement("div");
+    col.className = "col-6 col-md-3";
+
+    const preview = document.createElement("div");
+    preview.className = "pdf-preview";
+    preview.dataset.fileIndex = pdfFiles.indexOf(file);
+
+    const controls = document.createElement("div");
+    controls.className = "controls";
+
+    const leftBtn = document.createElement("button");
+    leftBtn.textContent = "←";
+    leftBtn.onclick = (e) => {
+      e.stopPropagation();
+      movePdf(preview, -1);
+    };
+
+    const rightBtn = document.createElement("button");
+    rightBtn.textContent = "→";
+    rightBtn.onclick = (e) => {
+      e.stopPropagation();
+      movePdf(preview, 1);
+    };
+
+    controls.append(leftBtn, rightBtn);
+
+    preview.append(canvas, controls);
+    preview.onclick = () => openSplitConfirm(preview);
+
+    col.appendChild(preview);
+    pdfPreviewContainer.appendChild(col);
+  }
+
+  mergeWrapper.classList.remove("d-none");
+});
+
+/* ===== Move PDF ===== */
+function movePdf(element, dir) {
+  const parent = element.parentElement;
+  const siblings = [...pdfPreviewContainer.children];
+  const index = siblings.indexOf(parent);
+  const newIndex = index + dir;
+
+  if (newIndex >= 0 && newIndex < siblings.length) {
+    pdfPreviewContainer.insertBefore(
+      parent,
+      siblings[newIndex + (dir > 0 ? 1 : 0)]
+    );
+  }
+}
+
+/* ===== Split Flow ===== */
+function openSplitConfirm(preview) {
+  activeSplitFileIndex = parseInt(preview.dataset.fileIndex);
+  new bootstrap.Modal(
+    document.getElementById("splitConfirmModal")
+  ).show();
+}
+
+document.getElementById("confirmSplitBtn").onclick = async () => {
+  bootstrap.Modal.getInstance(
+    document.getElementById("splitConfirmModal")
+  ).hide();
+
+  await loadSplitPages(activeSplitFileIndex);
+
+  new bootstrap.Modal(
+    document.getElementById("splitPagesModal")
+  ).show();
+};
+
+async function loadSplitPages(index) {
+  const file = pdfFiles[index];
+  const pdfData = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+
+  const grid = document.getElementById("splitPageGrid");
+  grid.innerHTML = "";
+
+  for (let i = 0; i < pdf.numPages; i++) {
+    const col = document.createElement("div");
+    col.className = "col-4 col-md-2";
+
+    col.innerHTML = `
+      <div class="page-card" data-page="${i}">
+        Page ${i + 1}
+      </div>
+    `;
+
+    col.onclick = () =>
+      col.firstElementChild.classList.toggle("selected");
+
+    grid.appendChild(col);
+  }
+}
+
+document.getElementById("applySplitBtn").onclick = async () => {
+  const selectedPages = [...document.querySelectorAll(".page-card.selected")]
+    .map(el => parseInt(el.dataset.page));
+
+  if (!selectedPages.length) {
+    alert("Select at least one page.");
+    return;
+  }
+
+  await splitPdf(activeSplitFileIndex, selectedPages);
+
+  bootstrap.Modal.getInstance(
+    document.getElementById("splitPagesModal")
+  ).hide();
+};
+
+/* ===== Split PDF ===== */
+async function splitPdf(index, pagesToKeep) {
+  const file = pdfFiles[index];
+  const pdfData = await file.arrayBuffer();
+  const pdfDoc = await PDFLib.PDFDocument.load(pdfData);
+
+  const newPdf = await PDFLib.PDFDocument.create();
+  const pages = await newPdf.copyPages(pdfDoc, pagesToKeep);
+  pages.forEach(p => newPdf.addPage(p));
+
+  const bytes = await newPdf.save();
+  pdfFiles[index] = new File([bytes], `split_${file.name}`, {
+    type: "application/pdf"
+  });
+}
+
+/* ===== Merge PDFs ===== */
+mergeButton.onclick = async () => {
+  const merged = await PDFLib.PDFDocument.create();
+
+  for (const file of pdfFiles) {
+    const data = await file.arrayBuffer();
+    const pdf = await PDFLib.PDFDocument.load(data);
+    const pages = await merged.copyPages(pdf, pdf.getPageIndices());
+    pages.forEach(p => merged.addPage(p));
+  }
+
+  const bytes = await merged.save();
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "merged.pdf";
+  a.click();
+};
+
+</script>
+
+</body>
+</html>
