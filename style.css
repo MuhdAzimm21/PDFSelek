@@ -1,175 +1,97 @@
-/* ================= GLOBAL ================= */
+:root {
+  --primary-color: #007bff;
+  --primary-hover-color: #0056b3;
+  --secondary-color: #6c757d;
+  --body-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-color: #212529;
+  --border-color: #dee2e6;
+  --navbar-bg: rgba(255, 255, 255, 0.8);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f7f9fc;
-  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--body-bg);
+  color: var(--text-color);
+  line-height: 1.6;
 }
 
-/* ================= HERO ================= */
-.hero-section {
-  padding: 110px 0 90px;
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #f3f6ff 100%
-  );
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
-.hero-section h1 {
-  color: #1f2937;
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
-.hero-section p {
-  color: #6b7280;
-}
-
-/* Primary Button */
 .btn-primary {
-  background-color: #6c8eff;
+  background-color: var(--primary-color);
+  color: #fff;
   border: none;
-  padding: 14px 34px;
-  border-radius: 12px;
 }
 
 .btn-primary:hover {
-  background-color: #5a7df5;
+  background-color: var(--primary-hover-color);
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(108, 142, 255, 0.35);
 }
 
-/* ================= FEATURE CARDS ================= */
+.navbar {
+  background-color: var(--navbar-bg);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+
 .feature-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   text-decoration: none;
-  border: none;
-  border-radius: 18px;
-  background: #ffffff;
-  transition: all 0.35s ease;
+  color: var(--text-color);
 }
 
 .feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
-.feature-card .card-title {
-  color: #1f2937;
+.upload-box {
+  background-color: var(--card-bg);
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  padding: 40px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.feature-card .card-text {
-  color: #6b7280;
+.upload-box.dragover {
+  background-color: #e9ecef;
+  border-color: var(--primary-color);
 }
 
-/* Icons */
-.icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  font-size: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Soft Icon Colors */
-.icon-blue {
-  background: #eef2ff;
-  color: #6c8eff;
-}
-
-.icon-purple {
-  background: #f3f0ff;
-  color: #9b8afb;
-}
-
-.icon-green {
-  background: #eafaf4;
-  color: #7ed6b2;
-}
-
-/* ================= TRUST ================= */
-.trust-icon {
-  width: 86px;
-  height: 86px;
-  background: #eef4ff;
+.help-icon {
+  background: var(--primary-color);
+  color: #fff;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  font-size: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-  color: #6c8eff;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: transform 0.3s ease;
 }
 
-.bg-light {
-  background-color: #f7f9fc !important;
+.help-icon:hover {
+  transform: scale(1.1);
 }
-
-/* ================= NAVBAR ================= */
-.navbar {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(8px);
-}
-
-.navbar-brand {
-  color: #6c8eff !important;
-}
-
-.nav-link {
-  color: #6b7280 !important;
-  font-weight: 500;
-}
-
-.nav-link:hover {
-  color: #6c8eff !important;
-}
-
-/* ================= FOOTER ================= */
-.footer {
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
-  padding: 50px 0;
-}
-
-.footer h5,
-.footer h6 {
-  color: #1f2937;
-}
-
-.footer a {
-  color: #6b7280;
-  text-decoration: none;
-}
-
-.footer a:hover {
-  color: #6c8eff;
-}
-
-/* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 90px 0 70px;
-  }
-}
-
 
 /* ================= Merge Page ================= */
-/* Upload Box */
-.upload-box {
-  background: #ffffff;
-  border: 2px dashed #dbe4ff;
-  border-radius: 20px;
-  padding: 60px 20px;
-}
-
-.upload-inner {
-  max-width: 420px;
-  margin: auto;
-}
-
-.upload-icon {
-  font-size: 48px;
-}
-
 /* Preview Grid */
 .preview-grid {
   display: grid;
@@ -178,10 +100,10 @@ body {
 }
 
 .pdf-preview {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 14px;
   padding: 12px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -204,55 +126,19 @@ body {
 
 .controls button {
   border: none;
-  background: #eef2ff;
-  color: #6c8eff;
+  background: var(--controls-btn-bg);
+  color: var(--controls-btn-color);
   padding: 6px 12px;
   border-radius: 8px;
   font-weight: 600;
 }
 
 .controls button:hover {
-  background: #6c8eff;
-  color: white;
+  background: var(--controls-btn-hover-bg);
+  color: var(--controls-btn-hover-color);
 }
-
-/* Help */
-.help-box {
-  background: #eef4ff;
-  border-radius: 16px;
-  padding: 20px;
-}
-
-.preview-grid {
-  align-items: stretch;
-}
-
-.upload-box.dragover {
-  border-color: #6f7cff;
-  background: #f2f4ff;
-  transform: scale(1.02);
-}
-
-
 
 /* ================= SPLIT PDF PAGE ================= */
-
-/* Upload box */
-.upload-box {
-  border: 2px dashed #d1d5db;
-  border-radius: 16px;
-  padding: 60px 30px;
-  background: #ffffff;
-  transition: all 0.3s ease;
-}
-
-.upload-box:hover {
-  border-color: #7c6ff1;
-  background: #f6f7ff;
-}
-
-/* ================= PDF PREVIEW GRID ================= */
-
 #pdfViewer {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -262,14 +148,13 @@ body {
   overflow-y: auto;
   padding: 16px;
 
-  background: #f8f9fc;
+  background: var(--pdf-viewer-bg);
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--pdf-viewer-border);
 }
 
-/* Individual page container */
 .page-container {
-  background: #ffffff;
+  background: var(--page-container-bg);
   border-radius: 14px;
   padding: 10px;
   text-align: center;
@@ -277,15 +162,14 @@ body {
   cursor: pointer;
   transition: all 0.25s ease;
 
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--card-shadow);
 }
 
 .page-container:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--card-hover-shadow);
 }
 
-/* PDF page image */
 .page-container img {
   width: 100%;
   height: auto;
@@ -294,49 +178,44 @@ body {
   border-radius: 10px;
 }
 
-/* Page number */
 .page-number {
   margin-top: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--secondary-color);
 }
 
-/* Selected page */
 .page-container.selected {
-  outline: 3px solid #7c6ff1;
-  background: #f3f4ff;
+  outline: 3px solid var(--page-container-selected-outline);
+  background: var(--page-container-selected-bg);
 }
-
-/* ================= SPLIT OPTIONS ================= */
 
 .split-card {
   border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
 }
 
-/* Status message */
-#status {
-  font-size: 15px;
-  font-weight: 500;
+/* ================= Split & Merge Page Specific Styles ================= */
+.page-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* Loading text */
-#loadingMessage {
-  font-size: 16px;
-  font-weight: 500;
+.page-card:hover {
+  background: var(--split-merge-page-card-hover-bg);
 }
 
-.upload-box.dragover {
-  border-color: #7c6ff1;
-  background: #f3f4ff;
+.page-card.selected {
+  border-color: var(--split-merge-page-card-selected-border);
+  background: var(--split-merge-page-card-selected-bg);
 }
 
-
-/* ================= RESPONSIVE ================= */
-
-/* Tablet */
 @media (max-width: 992px) {
   #pdfViewer {
     grid-template-columns: repeat(2, 1fr);
@@ -344,7 +223,6 @@ body {
   }
 }
 
-/* Mobile */
 @media (max-width: 576px) {
   .upload-box {
     padding: 40px 20px;
@@ -354,115 +232,4 @@ body {
     grid-template-columns: 1fr;
     max-height: 420px;
   }
-}
-
-/* Split & Merge Page Specific Styles */
-/* Upload box */
-.upload-box {
-  border: 2px dashed #d1d5db;
-  border-radius: 16px;
-  padding: 60px 30px;
-  background: #ffffff;
-  transition: all 0.3s ease;
-}
-
-.upload-box:hover {
-  border-color: #28a745;
-  background: #f1fdf6;
-}
-
-.upload-icon {
-  font-size: 48px;
-}
-
-/* PDF preview card */
-.pdf-preview {
-  position: relative;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.pdf-preview:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
-}
-
-.pdf-preview canvas {
-  width: 100%;
-  border-radius: 10px;
-}
-
-/* Move controls */
-.controls {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-}
-
-.controls button {
-  border: none;
-  background: #28a745;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Split pages */
-.page-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 12px;
-  text-align: center;
-  border: 2px solid #e5e7eb;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-card:hover {
-  background: #f3fdf7;
-}
-
-.page-card.selected {
-  border-color: #28a745;
-  background: #eafaf1;
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-  .upload-box {
-    padding: 40px 20px;
-  }
-}
-
-/* ================= FILE INPUT ================= */
-
-.help-icon {
-  background: linear-gradient(135deg, #7c6ff1, #4ade80); /* Purple to Green gradient */
-  color: #fff;
-  font-weight: bold;
-  font-size: 1.2rem;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.help-icon:hover {
-  transform: scale(1.2);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }

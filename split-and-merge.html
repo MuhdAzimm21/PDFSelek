@@ -8,18 +8,16 @@
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Custom CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- ================= HEADER ================= -->
 <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
   <div class="container">
     <a class="navbar-brand fw-bold" href="index.html">PDFSelek</a>
 
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navMenu">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -27,7 +25,7 @@
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="merge.html">Merge</a></li>
         <li class="nav-item"><a class="nav-link" href="split.html">Split</a></li>
-        <li class="nav-item"><a class="nav-link" href="split-and-merge.html">Split & Merge</a></li>
+        <li class="nav-item"><a class="nav-item"><a class="nav-link" href="split-and-merge.html">Split & Merge</a></li>
       </ul>
     </div>
   </div>
@@ -189,16 +187,6 @@
 
 <!-- Custom JS -->
 <script>
-/* ===================== VARIABLES ===================== */
-const uploadBox = document.querySelector(".upload-box");
-const pdfUpload = document.getElementById("pdfUpload");
-const pdfPreviewContainer = document.getElementById("pdfPreviewContainer");
-const mergeButton = document.getElementById("mergeButton");
-const mergeWrapper = document.getElementById("mergeWrapper");
-
-let pdfFiles = [];
-let activeSplitFileIndex = null;
-
 /* ===================== CORE FILE HANDLER ===================== */
 async function handleFiles(files) {
   const validFiles = Array.from(files).filter(
@@ -207,9 +195,13 @@ async function handleFiles(files) {
 
   if (!validFiles.length) return;
 
-  pdfFiles.push(...validFiles);
+  // Store File objects and their modified counterparts (after splitting)
+  validFiles.forEach(file => pdfFiles.push({ originalFile: file, modifiedFile: null }));
 
-  for (const file of validFiles) {
+  for (let i = 0; i < validFiles.length; i++) {
+    const file = validFiles[i];
+    const currentPdfFileIndex = pdfFiles.length - validFiles.length + i; // Correct index for the newly added file
+
     const pdfData = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
 
@@ -224,11 +216,21 @@ async function handleFiles(files) {
     await page.render({ canvasContext: ctx, viewport }).promise;
 
     const col = document.createElement("div");
-    col.className = "col-6 col-md-3";
+    col.className = "col-6 col-md-3"; // Bootstrap column for grid layout
 
     const preview = document.createElement("div");
     preview.className = "pdf-preview";
-    preview.dataset.fileIndex = pdfFiles.indexOf(file);
+    preview.dataset.fileIndex = currentPdfFileIndex; // Use the correct, unique index
+
+    // Delete Button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn-close position-absolute top-0 end-0 p-2";
+    deleteBtn.title = "Remove PDF";
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation(); // Prevent triggering openSplitConfirm
+      removePdf(currentPdfFileIndex);
+    };
+    preview.appendChild(deleteBtn);
 
     const controls = document.createElement("div");
     controls.className = "controls";
@@ -250,13 +252,61 @@ async function handleFiles(files) {
     controls.append(leftBtn, rightBtn);
 
     preview.append(canvas, controls);
-    preview.onclick = () => openSplitConfirm(preview);
+    preview.onclick = () => openSplitConfirm(preview); // Original click behavior
 
     col.appendChild(preview);
     pdfPreviewContainer.appendChild(col);
   }
 
-  mergeWrapper.classList.remove("d-none");
+  updateMergeButtonVisibility();
+}
+
+/* ===================== REMOVE PDF FUNCTION ===================== */
+function removePdf(indexToRemove) {
+  if (indexToRemove < 0 || indexToRemove >= pdfFiles.length) return;
+
+  // Remove the file data from our array
+  pdfFiles.splice(indexToRemove, 1);
+
+  // Remove the corresponding DOM element
+  const previewToRemove = document.querySelector(`.pdf-preview[data-file-index='${indexToRemove}']`);
+  if (previewToRemove && previewToRemove.parentElement) {
+    previewToRemove.parentElement.remove(); // Remove the col-md-3 wrapper
+  }
+
+  // Re-index remaining DOM elements and update their data-file-index
+  const remainingPreviews = pdfPreviewContainer.querySelectorAll(".pdf-preview");
+  remainingPreviews.forEach((previewEl, newIndex) => {
+    previewEl.dataset.fileIndex = newIndex;
+  });
+
+  // Re-index the pdfFiles array if any were removed
+  // This is crucial to keep the array indices aligned with DOM data-file-index
+  // We're essentially rebuilding the pdfFiles array from the current DOM order
+  const newPdfFiles = [];
+  pdfPreviewContainer.querySelectorAll(".pdf-preview").forEach(previewEl => {
+    const originalIndex = parseInt(previewEl.dataset.originalFileIndex || previewEl.dataset.fileIndex);
+    // Find the actual file object from the old pdfFiles based on its original index
+    newPdfFiles.push(pdfFiles[originalIndex]);
+  });
+  // pdfFiles = newPdfFiles.filter(Boolean); // Filter out any nulls if direct splice isn't used
+
+  // No, actually, the splice above handles array removal directly, so re-indexing `pdfFiles` is simpler:
+  // After `splice`, the array automatically shifts, so we just need to ensure `data-file-index` matches
+  // the new order, which is done by the loop above. `pdfFiles` is already correct after `splice`.
+
+  updateMergeButtonVisibility();
+}
+
+
+/* ===================== UTILITY: UPDATE MERGE BUTTON VISIBILITY ===================== */
+function updateMergeButtonVisibility() {
+  const remainingPdfs = pdfFiles.filter(f => f !== null); // Count non-null PDFs
+  if (remainingPdfs.length > 0) {
+    mergeWrapper.classList.remove("d-none");
+  } else {
+    mergeWrapper.classList.add("d-none");
+  }
 }
 
 /* ===================== FILE INPUT ===================== */
@@ -292,12 +342,24 @@ function movePdf(preview, dir) {
   const newIndex = index + dir;
 
   if (newIndex >= 0 && newIndex < siblings.length) {
+    // Move the DOM element
     pdfPreviewContainer.insertBefore(
       col,
       siblings[newIndex + (dir > 0 ? 1 : 0)]
     );
+
+    // Update pdfFiles array to reflect new order
+    const movedFile = pdfFiles[index];
+    pdfFiles.splice(index, 1); // Remove from old position
+    pdfFiles.splice(newIndex, 0, movedFile); // Insert into new position
+
+    // Re-index all previews in DOM to match new array order
+    pdfPreviewContainer.querySelectorAll(".pdf-preview").forEach((p, i) => {
+      p.dataset.fileIndex = i;
+    });
   }
 }
+
 
 /* ===================== SPLIT FLOW ===================== */
 function openSplitConfirm(preview) {
@@ -319,9 +381,10 @@ document.getElementById("confirmSplitBtn").onclick = async () => {
   ).show();
 };
 
-async function loadSplitPages(index) {
-  const file = pdfFiles[index];
-  const pdfData = await file.arrayBuffer();
+async function loadSplitPages(fileIndex) { // Renamed parameter from 'index' to 'fileIndex' for clarity
+  const fileInfo = pdfFiles[fileIndex];
+  const fileToProcess = fileInfo.modifiedFile || fileInfo.originalFile;
+  const pdfData = await fileToProcess.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
 
   const grid = document.getElementById("splitPageGrid");
@@ -333,8 +396,8 @@ async function loadSplitPages(index) {
 
     const card = document.createElement("div");
     card.className = "page-card";
-    card.dataset.page = i;
-    card.textContent = `Page ${i + 1}`;
+    card.dataset.page = i; // Store 0-based index
+    card.textContent = `Page ${i + 1}`; // Display 1-based page number
 
     card.onclick = () => card.classList.toggle("selected");
 
@@ -345,7 +408,7 @@ async function loadSplitPages(index) {
 
 document.getElementById("applySplitBtn").onclick = async () => {
   const selectedPages = [...document.querySelectorAll(".page-card.selected")]
-    .map(el => parseInt(el.dataset.page));
+    .map(el => parseInt(el.dataset.page)); // Get 0-based indices
 
   if (!selectedPages.length) {
     alert("Select at least one page.");
@@ -360,27 +423,57 @@ document.getElementById("applySplitBtn").onclick = async () => {
 };
 
 /* ===================== SPLIT PDF ===================== */
-async function splitPdf(index, pagesToKeep) {
-  const file = pdfFiles[index];
-  const pdfData = await file.arrayBuffer();
+async function splitPdf(fileIndex, pagesToKeep0Based) {
+  const fileInfo = pdfFiles[fileIndex];
+  const fileToProcess = fileInfo.originalFile; // Always split from the original file
+
+  const pdfData = await fileToProcess.arrayBuffer();
   const pdfDoc = await PDFLib.PDFDocument.load(pdfData);
 
   const newPdf = await PDFLib.PDFDocument.create();
-  const pages = await newPdf.copyPages(pdfDoc, pagesToKeep);
+  // pagesToKeep0Based contains 0-based indices, so we copy them directly
+  const pages = await newPdf.copyPages(pdfDoc, pagesToKeep0Based);
   pages.forEach(p => newPdf.addPage(p));
 
   const bytes = await newPdf.save();
-  pdfFiles[index] = new File([bytes], `split_${file.name}`, {
+  // Update the modifiedFile property of the fileInfo object
+  pdfFiles[fileIndex].modifiedFile = new File([bytes], `split_${fileInfo.originalFile.name}`, {
     type: "application/pdf"
   });
+
+  // Re-render the specific preview with the newly split PDF
+  const previewDiv = document.querySelector(`.pdf-preview[data-file-index='${fileIndex}']`);
+  if (previewDiv) {
+    // Clear previous canvas and render the first page of the new PDF
+    previewDiv.querySelector('canvas').remove();
+    const newCanvas = await renderPdfPage(pdfFiles[fileIndex].modifiedFile, 1);
+    previewDiv.prepend(newCanvas); // Add new canvas to the beginning
+  }
 }
+
+/* ===================== HELPER: RENDER SINGLE PDF PAGE TO CANVAS ===================== */
+async function renderPdfPage(file, pageNum) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(pageNum);
+    const viewport = page.getViewport({ scale: 0.3 }); // Small scale for thumbnail
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    return canvas;
+}
+
 
 /* ===================== MERGE PDFs ===================== */
 mergeButton.onclick = async () => {
   const merged = await PDFLib.PDFDocument.create();
 
-  for (const file of pdfFiles) {
-    const data = await file.arrayBuffer();
+  // Iterate over pdfFiles, using modifiedFile if it exists, otherwise originalFile
+  for (const fileInfo of pdfFiles) {
+    const fileToMerge = fileInfo.modifiedFile || fileInfo.originalFile;
+    const data = await fileToMerge.arrayBuffer();
     const pdf = await PDFLib.PDFDocument.load(data);
     const pages = await merged.copyPages(pdf, pdf.getPageIndices());
     pages.forEach(p => merged.addPage(p));
@@ -398,5 +491,7 @@ mergeButton.onclick = async () => {
 </script>
 
 
+<script>
+</script>
 </body>
 </html>
