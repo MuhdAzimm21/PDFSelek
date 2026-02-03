@@ -187,6 +187,12 @@
 
 <!-- Custom JS -->
 <script>
+let pdfFiles = [];
+const pdfUpload = document.getElementById("pdfUpload");
+const pdfPreviewContainer = document.getElementById("pdfPreviewContainer");
+const mergeWrapper = document.getElementById("mergeWrapper");
+const mergeButton = document.getElementById("mergeButton");
+const uploadBox = document.querySelector(".upload-box");
 /* ===================== CORE FILE HANDLER ===================== */
 async function handleFiles(files) {
   const validFiles = Array.from(files).filter(
